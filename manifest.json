@@ -1,5 +1,5 @@
 {
-    "display_name": "extension",
+    "display_name": "st-test-extension",
     "loading_order": 100,
     "requires": [],
     "optional": [],
